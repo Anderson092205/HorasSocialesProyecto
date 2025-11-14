@@ -15,9 +15,9 @@ public class TestConnectionController {
         String url = "jdbc:sqlserver://ANDERSON:1433;databaseName=CementerioLibertadEste;integratedSecurity=true;encrypt=true;trustServerCertificate=true";
 
         try (Connection conn = DriverManager.getConnection(url)) {
-            return "✅ Conexión exitosa con SQL Server";
+            return "Conexión exitosa con SQL Server";
         } catch (SQLException e) {
-            return "❌ Error de conexión: " + e.getMessage();
+            return " Error de conexión: " + e.getMessage();
         }
     }
 }
