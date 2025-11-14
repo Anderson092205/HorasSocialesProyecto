@@ -1,0 +1,6 @@
+<!-- src/app/dashboard/dashboard.component.html -->
+<div class="card fade-in">
+  <h2>Prueba de conexión</h2>
+  <p *ngIf="response">✅ {{ response }}</p>
+  <p *ngIf="!response">⏳ Esperando respuesta del backend...</p>
+</div>
