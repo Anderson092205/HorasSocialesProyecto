@@ -9,5 +9,4 @@ public class CementeriosLeApplication {
     public static void main(String[] args) {
         SpringApplication.run(CementeriosLeApplication.class, args);
     }
-
 }

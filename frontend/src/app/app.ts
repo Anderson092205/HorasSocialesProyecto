@@ -2,16 +2,17 @@
 import { Component, signal } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     HttpClientModule,      
-    DashboardComponent
+    RouterOutlet
   ],
   template: `
-    <app-dashboard></app-dashboard>
+    <router-outlet></router-outlet>
   `,
   styles: []
 })
