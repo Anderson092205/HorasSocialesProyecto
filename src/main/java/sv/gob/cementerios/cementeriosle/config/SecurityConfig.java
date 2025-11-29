@@ -61,6 +61,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Permite el acceso a /api/auth/login SIN autenticación
                         .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/v1/cementerios").permitAll()
 
                         // Cualquier otra petición requiere autenticación (JWT)
                         .anyRequest().authenticated()

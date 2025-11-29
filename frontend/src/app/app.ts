@@ -1,7 +1,6 @@
 // src/app/app.ts
 import { Component, signal } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
-import { DashboardComponent } from './dashboard/dashboard.component';
 import { RouterOutlet } from '@angular/router';
 
 @Component({

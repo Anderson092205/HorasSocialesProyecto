@@ -33,7 +33,8 @@ export class LoginComponent implements OnInit {
     
     // Redirige si ya está logueado
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/home']);
+      // 🚨 CORRECCIÓN FINAL: Redirigir a la ruta principal existente
+      this.router.navigate(['/cementerios']); 
     }
   }
 
@@ -49,8 +50,10 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.correo, this.password).subscribe({
       next: (response: any) => {
+        // Asumo que el token viene en 'response.jwt'
         this.authService.setToken(response.jwt);
-        this.router.navigate(['/home']); 
+        // Navegar a la ruta correcta
+        this.router.navigate(['/cementerios']); 
       },
       error: (err) => {
         this.errorMessage = 'Credenciales no válidas. Por favor, verifica tu correo y contraseña.';
