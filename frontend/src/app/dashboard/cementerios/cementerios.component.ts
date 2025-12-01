@@ -17,8 +17,9 @@ import { AuthService } from '../../auth.service'; // 🚨 RUTA CORREGIDA: Sube d
     RouterModule 
   ],
   templateUrl: './cementerios.component.html',
-  styleUrl: './cementerios.component.css'
+  styleUrls: ['./cementerios.component.css']
 })
+
 export class CementeriosComponent implements OnInit {
 
   cementerios: Cementerio[] = [];
