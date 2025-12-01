@@ -1,49 +1,75 @@
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Cementerios La Libertad</h1>
+<!-- BARRA ROSA SUPERIOR -->
+<div class="top-bar">
+    <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <span class="title-left">Alcaldía Antiguo Cuscatlán</span>
+</div>
+
+<!-- SECCIÓN PRINCIPAL DEL HEADER -->
+<div class="header-content">
+
+    <!-- LOGO -->
+    <div class="logo-area">
+        <img src="assets/logo-cementerio.png" alt="Logo Cementerio" class="logo-img">
+        <div class="text-group">
+            <span class="titulo-rosa">CEMENTERIO DIGITAL</span>
+            <span class="titulo-negro">LA LIBERTAD ESTE</span>
+        </div>
+    </div>
+
+    <!-- MENÚ DERECHO -->
+    <div class="menu-options">
+        <span>SOPORTE TÉCNICO</span>
+        <span>ESPAÑOL–INTERNACIONAL (ES)</span>
+    </div>
+</div>
+
+<!-- LÍNEA GRIS -->
+<hr class="divider">
+
+<div class="cementerios-container">
     
-    <div *ngIf="cargando" class="alert alert-info text-center" role="alert">
+    <h2 class="titulo">Cementerios La Libertad</h2>
+
+    <!-- Loader -->
+    <div *ngIf="cargando" class="mensaje cargando">
         Cargando cementerios...
     </div>
 
-    <div *ngIf="errorCarga" class="alert alert-danger text-center" role="alert">
+    <!-- Error -->
+    <div *ngIf="errorCarga" class="mensaje error">
         {{ errorCarga }}
     </div>
 
-    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-        
-        <div class="col" *ngFor="let cementerio of cementerios">
-            <div class="card h-100 shadow-sm {{ getCardClass(cementerio.tipo) }}">
-                <div class="card-body d-flex flex-column justify-content-between">
-                    <div>
-                        <h5 class="card-title text-center text-white p-2" 
-                            style="background-color: #d63384; border-radius: 5px;">
-                            {{ cementerio.nombre }}
-                        </h5>
-                        
-                        <p class="card-text text-muted text-center mt-2">
-                            Tipo: <strong>{{ cementerio.tipo }}</strong>
-                        </p>
-                    </div>
-                    
-                    <div class="text-center mt-3">
-                         <a [routerLink]="['/detalle-cementerio', cementerio.id]" 
-                            class="btn btn-primary" 
-                            style="background-color: #007bff; border-color: #007bff;">
-                             Ir a...
-                         </a>
-                    </div>
+    <!-- Lista de cementerios -->
+    <div class="grid">
+        <div class="card" *ngFor="let c of cementerios">
+            
+            <div class="card-img"></div>
 
-                </div>
+            <div class="card-body">
+                <h3 class="card-title">{{ c.nombre }}</h3>
+                <p class="card-tipo">{{ c.tipo }}</p>
+
+                <a [routerLink]="['/detalle-cementerio', c.id]" class="btn-ir">
+                    Ir a...
+                </a>
             </div>
-        </div>
 
-        <div *ngIf="!cargando && cementerios.length === 0" class="col-12">
-            <div class="alert alert-warning text-center">
-                No se encontraron cementerios disponibles.
-            </div>
         </div>
-            <!-- En tu HTML del Dashboard -->
-<button (click)="cerrarSesion()">Cerrar Sesión</button>
+    </div>
 
+    <!-- Sin resultados -->
+    <div *ngIf="!cargando && cementerios.length === 0" class="mensaje vacio">
+        No se encontraron cementerios disponibles.
+    </div>
+
+    <!-- Botón de cerrar sesión -->
+    <div class="logout">
+        <button class="btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
     </div>
 </div>
