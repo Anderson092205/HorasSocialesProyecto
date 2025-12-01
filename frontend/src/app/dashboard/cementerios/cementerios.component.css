@@ -199,12 +199,15 @@
 }
 
 .titulo-negro {
+    
     color: #222;
     font-size: 18px;
     font-weight: bold;
+
 }
 
 /* MENÚ DERECHO */
+
 .menu-options {
     display: flex;
     gap: 40px;
