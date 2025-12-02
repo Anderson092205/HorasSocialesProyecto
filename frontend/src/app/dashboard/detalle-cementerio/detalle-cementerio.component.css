@@ -1,0 +1,88 @@
+/* Barra superior rosa */
+.topbar {
+    width: 100%;
+    height: 70px;
+    background: #e30074; /* rosa fuerte */
+}
+
+/* Contenedor principal */
+.container-principal {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+}
+
+/* Título */
+.titulo {
+    text-align: center;
+    font-size: 28px;
+    color: #e30074;
+    margin-bottom: 25px;
+    font-weight: bold;
+}
+
+/* Área para imagen */
+.imagen-area {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.imagen-placeholder {
+    width: 100%;
+    height: 200px;
+    background: #f7d0e5;
+    border: 2px dashed #e30074;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #e30074;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Contenedor de tabla */
+.tabla-container {
+    margin-top: 40px;
+}
+
+/* Tabla moderna sin bordes externos */
+.tabla {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 12px; /* separación entre columnas */
+}
+
+/* Columnas */
+.columna {
+    background: #f9f2f6;
+    padding: 15px;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #e30074;
+    box-shadow: 0 0 6px rgba(0,0,0,0.1);
+}
+
+/* Botón regresar */
+.btn-regresar {
+    margin-top: 40px;
+    padding: 10px 20px;
+    background: #e30074;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: block;
+    margin-left: auto;
+}
+
+.btn-regresar:hover {
+    background: #c60067;
+}
+
