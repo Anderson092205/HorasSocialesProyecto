@@ -3,6 +3,9 @@ package sv.gob.cementerios.cementeriosle.controller;
 import sv.gob.cementerios.cementeriosle.dto.AuthRequest;
 import sv.gob.cementerios.cementeriosle.dto.AuthResponse;
 import sv.gob.cementerios.cementeriosle.security.JwtUtil;
+import sv.gob.cementerios.cementeriosle.model.Usuario;
+import sv.gob.cementerios.cementeriosle.repository.UsuarioRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-// Permite llamadas desde Angular (puerto 4200 por defecto)
 @CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
 
@@ -25,6 +27,9 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) {
         try {
@@ -33,18 +38,31 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(authRequest.getCorreo(), authRequest.getPassword())
             );
 
-            // 2. Si es exitoso, obtiene el usuario de seguridad
+            // 2. Obtiene los detalles de seguridad
             final UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-            // 3. Genera el token JWT
+            // 3. BUSCAR LA ENTIDAD REAL DEL USUARIO (Usando el correo)
+            Usuario usuario = usuarioRepository.findByCorreo(userDetails.getUsername())
+                    .orElseThrow(() -> new BadCredentialsException("Usuario no encontrado en la base de datos después de autenticación exitosa."));
+
+            // 4. Genera el token JWT
             final String jwt = jwtUtil.generateToken(userDetails);
 
-            // 4. Devuelve el token en la respuesta
-            return ResponseEntity.ok(new AuthResponse(jwt));
+            // 5. Devuelve la respuesta COMPLETA
+            AuthResponse response = new AuthResponse(
+                    jwt,
+                    usuario.getIdUsuario(), // <--- CORRECCIÓN: Llamamos al getter generado por Lombok
+                    usuario.getRol().toString()
+            );
+
+            return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException e) {
-            // Manejo de credenciales incorrectas (401)
+            // Credenciales incorrectas (401)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales de usuario o contraseña incorrectas.");
+        } catch (Exception e) {
+            // Cualquier otra excepción
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor: " + e.getMessage());
         }
     }
 }

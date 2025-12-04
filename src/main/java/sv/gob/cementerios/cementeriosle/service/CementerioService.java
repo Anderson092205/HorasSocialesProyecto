@@ -7,18 +7,10 @@ import java.util.List;
 
 public interface CementerioService {
 
-    /**
-     * Obtiene la lista de todos los cementerios para el dashboard.
-     * @return Lista de DTOs de respuesta.
-     */
-    List<CementerioResponseDTO> obtenerTodosLosCementerios();
+    // 🚨 Este es el método nuevo/reemplazado
+    List<CementerioResponseDTO> obtenerCementeriosPorUsuario(Integer usuarioId, String rolUsuario);
 
-    /**
-     * Obtiene todos los detalles consolidados de un cementerio por su ID.
-     * @param idCementerio ID del cementerio a buscar.
-     * @return DTO con la información de detalle.
-     */
+    // Este método ya existía
     CementerioDetalleDTO obtenerDetallePorId(Integer idCementerio);
 
-    // Puedes agregar aquí métodos futuros para guardar, actualizar o eliminar.
 }
