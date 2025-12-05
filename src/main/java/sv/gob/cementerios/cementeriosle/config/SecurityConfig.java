@@ -1,5 +1,6 @@
 package sv.gob.cementerios.cementeriosle.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -7,18 +8,23 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // ¡Clase para el Hash!
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import sv.gob.cementerios.cementeriosle.security.JwtAuthenticationFilter;
 import java.util.Arrays;
-import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    // 1. Inyectamos el filtro. Spring lo encuentra porque tiene @Component en su clase.
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // Define que BCrypt se usará para codificar/verificar contraseñas
     @Bean
@@ -31,11 +37,12 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // Configuración CORS para permitir peticiones desde Angular (localhost:4200)
+    // Configuración CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200")); // Origen de Angular
+        // Asegúrate de que esta URL sea la correcta para tu proyecto Angular
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -48,26 +55,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Configuración de CORS y CSRF
-                .csrf(csrf -> csrf.disable()) // Usa el nuevo estilo lambda para deshabilitar CSRF
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable()) // Deshabilita CSRF para APIs REST
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Aplica la configuración CORS
 
-                // 2. Gestión de Sesiones (Stateless)
                 .sessionManagement(session -> session
+                        // Spring Security no creará ni usará sesiones HTTP (es Stateless, para JWT)
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 3. Configuración de Autorización (¡La parte que da error!)
+                // Configuración de Autorización
                 .authorizeHttpRequests(auth -> auth
-                        // Permite el acceso a /api/auth/login SIN autenticación
+                        // Ruta de Login (Auth) es pública
                         .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/v1/cementerios").permitAll()
-
-                        // Cualquier otra petición requiere autenticación (JWT)
+                        // Permite también el endpoint de conexión de prueba (si existe)
+                        // Todas las demás peticiones requieren autenticación
                         .anyRequest().authenticated()
                 );
 
-        // Nota: La adición de filtros JWT y manejo de excepciones iría aquí, pero por ahora, esto soluciona el error de sintaxis.
+        // INSERCIÓN DEL FILTRO JWT
+        // Se añade antes del filtro estándar de autenticación de usuario y contraseña
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

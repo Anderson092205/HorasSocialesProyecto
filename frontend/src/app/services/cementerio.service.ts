@@ -1,27 +1,34 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http'; 
 import { Observable } from 'rxjs';
-import { Cementerio } from '../models/cementerio.interface';
+// Asume que estas interfaces existen en 'models'
+import { Cementerio } from '../models/cementerio.interface'; 
+import { CementerioDetalle } from '../models/cementerio-detalle.interface'; 
 
-// Asegúrate de que esta URL base sea correcta
+// URL base del backend
 const API_URL = 'http://localhost:8080/api/v1/cementerios'; 
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root'
 })
 export class CementerioService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { }
 
-  // Método existente para obtener todos los cementerios
-  obtenerCementerios(): Observable<Cementerio[]> {
-    return this.http.get<Cementerio[]>(API_URL);
-  }
+  // Obtiene cementerios filtrados por el ID y Rol del usuario
+  obtenerCementeriosPorUsuario(usuarioId: number, rol: string): Observable<Cementerio[]> {
+    // Construye los parámetros de consulta que Spring Boot espera
+    let params = new HttpParams()
+      .set('usuarioId', usuarioId.toString())
+      .set('rol', rol); 
 
-  // 🚨 MÉTODO NUEVO para el componente DetalleCementerioComponent
-  getById(id: number): Observable<Cementerio> {
-    // Llama al endpoint de Spring Boot /api/v1/cementerios/{id}
-    const url = `${API_URL}/${id}`;
-    return this.http.get<Cementerio>(url);
-  }
+    // Llama al endpoint GET /api/v1/cementerios?usuarioId=X&rol=Y
+    return this.http.get<Cementerio[]>(API_URL, { params: params });
+  }
+  
+  // Método para obtener el detalle completo de un cementerio
+  obtenerDetallePorId(id: number): Observable<CementerioDetalle> {
+    const url = `${API_URL}/${id}`;
+    return this.http.get<CementerioDetalle>(url);
+  }
 }
