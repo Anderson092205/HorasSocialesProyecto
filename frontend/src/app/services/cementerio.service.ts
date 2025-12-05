@@ -22,10 +22,16 @@ export class CementerioService {
       .set('usuarioId', usuarioId.toString())
       .set('rol', rol); 
 
-    // Llama al endpoint GET /api/v1/cementerios?usuarioId=X&rol=Y
+    // Llama al endpoint GET /api/v1/cementerios?usuarioId=X&rol=Y
     return this.http.get<Cementerio[]>(API_URL, { params: params });
   }
   
+  // Método añadido: Obtiene todos los cementerios (sin filtrar por usuario)
+  obtenerCementerios(): Observable<Cementerio[]> {
+    // Llama al endpoint GET /api/v1/cementerios
+    return this.http.get<Cementerio[]>(API_URL);
+  }
+
   // Método para obtener el detalle completo de un cementerio
   obtenerDetallePorId(id: number): Observable<CementerioDetalle> {
     const url = `${API_URL}/${id}`;
