@@ -1,10 +1,40 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Injectable } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
-import { CementerioService } from '../../services/cementerio.service';
-import { CementerioDetalle } from '../../models/cementerio-detalle.interface';
-import { catchError, of } from 'rxjs';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { catchError, of, Observable } from 'rxjs';
+
+// --- MOCK INTERFACES Y SERVICIO (Para la funcionalidad en un entorno aislado) ---
+
+// 1. Interfaz del Detalle (Simulada)
+export interface CementerioDetalle {
+    id: number;
+    nombre: string;
+    ubicacion: string;
+    tipo: string; 
+    datosTabla: string[];
+}
+
+// 2. Servicio Mock (Simulando CementerioService)
+@Injectable({ providedIn: 'root' })
+export class CementerioService {
+    // Es necesario inyectar HttpClient en el constructor si se usa en la app real
+    constructor(private http: HttpClient) {} 
+    
+    // Simula la llamada HTTP
+    obtenerDetallePorId(id: number): Observable<CementerioDetalle> {
+        const mockData: CementerioDetalle = {
+            id: id,
+            nombre: `Cementerio Histórico Nº ${id}`,
+            ubicacion: 'Avenida Siempre Viva 742',
+            tipo: (id % 2 === 0) ? 'General' : 'Jardín',
+            datosTabla: Array(10).fill(0).map((_, i) => `Metadato ${i + 1}`)
+        };
+        // Retorna un Observable con los datos simulados
+        return of(mockData); 
+    }
+}
+// ----------------------------------------------------------------------------------
 
 @Component({
   selector: 'app-detalle-cementerio',
@@ -25,7 +55,9 @@ export class DetalleCementerioComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private cementerioService: CementerioService
+    private cementerioService: CementerioService,
+    // Se requiere el HttpClient para el mock del servicio
+    private http: HttpClient 
   ) { }
 
   ngOnInit(): void {
@@ -44,6 +76,7 @@ export class DetalleCementerioComponent implements OnInit {
     this.cargando = true;
     this.errorCarga = null;
 
+    // Suscripción al servicio
     this.cementerioService.obtenerDetallePorId(id).pipe(
       catchError(err => {
         this.errorCarga = `No se pudo cargar el detalle del cementerio ID ${id}.`;
