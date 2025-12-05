@@ -2,41 +2,41 @@
 
 <div class="container-principal">
 
-    <h2 class="titulo">{{ cementerio?.nombre }}</h2>
+    <!-- CORREGIDO: Usando 'cementerioDetalle?.nombre' en lugar de 'cementerio?.nombre' -->
+    <h2 class="titulo">{{ cementerioDetalle?.nombre }}</h2>
 
-    <!-- Indicador de carga -->
-    <div *ngIf="cargando" class="alert alert-info text-center">
-        Cargando información...
-    </div>
+    <!-- Indicador de carga -->
+    <div *ngIf="cargando" class="alert alert-info text-center">
+        Cargando información...
+    </div>
 
-    <!-- Error -->
-    <div *ngIf="errorCarga" class="alert alert-danger text-center">
-        {{ errorCarga }}
-    </div>
+    <!-- Error -->
+    <div *ngIf="errorCarga" class="alert alert-danger text-center">
+        {{ errorCarga }}
+    </div>
 
-    <!-- Contenido -->
-    <div *ngIf="cementerio && !cargando" class="contenido">
+    <!-- Contenido CORREGIDO: Usando 'cementerioDetalle' en lugar de 'cementerio' -->
+    <div *ngIf="cementerioDetalle && !cargando" class="contenido">
 
-        <!-- Imagen o espacio para imágenes -->
-        <div class="imagen-area">
-            <!-- Puedes reemplazar por imagen real -->
-            <div class="imagen-placeholder">
-                <img src="img/LogoAlcaldia (1s).png" alt="Logo Alcaldia" class="main-logo" />
-            </div>
-        </div>
+        <!-- Imagen o espacio para imágenes -->
+        <div class="imagen-area">
+            <!-- Puedes reemplazar por imagen real -->
+            <div class="imagen-placeholder">
+                <img src="img/LogoAlcaldia (1s).png" alt="Logo Alcaldia" class="main-logo" />
+            </div>
+        </div>
 
-        <!-- Tabla de 1 fila y 10 columnas -->
-        <div class="tabla-container">
-            <div class="tabla">
-                <div class="columna" *ngFor="let col of columnas">
-                    <span>Dato</span>
-                </div>
-            </div>
-        </div>
+        <!-- Tabla de 1 fila y 10 columnas -->
+        <div class="tabla-container">
+            <div class="tabla">
+                <div class="columna" *ngFor="let col of columnas">
+                    <span>Dato</span>
+                </div>
+            </div>
+        </div>
 
-        <!-- Botón regresar -->
-        <button class="btn-regresar" (click)="goBack()">⟵ Regresar</button>
-    </div>
+        <!-- Botón regresar -->
+        <button class="btn-regresar" (click)="goBack()">⟵ Regresar</button>
+    </div>
 
 </div>
-
