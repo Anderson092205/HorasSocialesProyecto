@@ -1,7 +1,7 @@
 :host {
   display: block;
   font-family: 'Segoe UI', sans-serif;
-  background-color: #ff0099;
+  background-color: #d73387;
   min-height: 100vh;
   overflow: hidden;
   position: relative;
@@ -22,7 +22,7 @@
 
 /* Encabezado superior*/
 .top-header {
-  background-color: #e7088e;
+  background-color: #d73387;
   padding: 0.5rem 2rem;
   font-size: 0.9rem;
   color: #ffffff;
@@ -38,7 +38,7 @@
   align-items: center;
   padding: 0.5rem 2rem 1rem 2rem;
   background-color: white;
-  color: #ff0099;
+  color: #d73387;
   z-index: 2;
   position: relative;
 }
