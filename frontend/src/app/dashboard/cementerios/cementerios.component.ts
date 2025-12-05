@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-
 import { CommonModule } from '@angular/common'; 
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router'; 
 
 import { CementerioService } from '../../services/cementerio.service'; 
 import { Cementerio } from '../../models/cementerio.interface'; 
-import { AuthService } from '../../auth.service'; // 🚨 RUTA CORREGIDA: Sube dos niveles y accede a auth.service.ts
+import { AuthService } from '../../auth.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-cementerios',
@@ -19,21 +19,23 @@ import { AuthService } from '../../auth.service'; // 🚨 RUTA CORREGIDA: Sube d
   templateUrl: './cementerios.component.html',
   styleUrls: ['./cementerios.component.css']
 })
-
 export class CementeriosComponent implements OnInit {
 
   cementerios: Cementerio[] = [];
   cargando: boolean = true;
   errorCarga: string | null = null;
 
-  // Constructor que fusiona todas las dependencias
+  lang = 'es'; // idioma actual
+
   constructor(
     private cementerioService: CementerioService,
-    private authService: AuthService, // Agregado para logout
-    private router: Router // Agregado para navegación
+    private authService: AuthService,
+    private router: Router,
+    public languageService: LanguageService // <---- NUEVO
   ) { }
 
   ngOnInit(): void {
+    this.languageService.currentLang$.subscribe(l => this.lang = l);
     this.cargarCementerios();
   }
 
@@ -45,25 +47,26 @@ export class CementeriosComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar cementerios:', err);
-        this.errorCarga = 'Error al conectar con el servidor. Por favor, verifica el backend.';
+        this.errorCarga = 'Error al conectar con el servidor.';
         this.cargando = false;
       }
     });
   }
 
-  // MÉTODO PARA CERRAR SESIÓN
   cerrarSesion(): void {
     this.authService.logout();
-    this.router.navigate(['/login']); // Redirige a la página de login
+    this.router.navigate(['/login']);
   }
 
-  getCardClass(tipo: string): string {
-    // Lógica para asignar clases CSS según el tipo de cementerio
-    if (tipo && tipo.toLowerCase().includes('general')) {
-      return 'border-primary'; 
-    } else if (tipo && tipo.toLowerCase().includes('jardin')) {
-      return 'border-success'; 
-    }
-    return '';
+  cambiarIdioma(): void {
+    const nuevo = this.lang === 'es' ? 'en' : 'es';
+    this.languageService.setLanguage(nuevo);
+  }
+
+  t(key: string) {
+    return this.languageService.translate(key);
   }
 }
+
+
+
