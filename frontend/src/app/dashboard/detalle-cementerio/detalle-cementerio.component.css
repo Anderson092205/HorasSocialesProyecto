@@ -2,7 +2,7 @@
 .topbar {
     width: 100%;
     height: 70px;
-    background: #e30074; /* rosa fuerte */
+    background: #d73387; /* rosa fuerte */
 }
 
 /* Contenedor principal */
@@ -20,7 +20,7 @@
 .titulo {
     text-align: center;
     font-size: 28px;
-    color: #e30074;
+    color: #d73387;
     margin-bottom: 25px;
     font-weight: bold;
 }
@@ -35,12 +35,12 @@
     width: 100%;
     height: 200px;
     background: #f7d0e5;
-    border: 2px dashed #e30074;
+    border: 2px dashed #d73387;
     border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #e30074;
+    color: #d73387;
     font-weight: bold;
     font-size: 18px;
 }
@@ -64,7 +64,7 @@
     text-align: center;
     border-radius: 8px;
     font-weight: 600;
-    color: #e30074;
+    color: #d73387;
     box-shadow: 0 0 6px rgba(0,0,0,0.1);
 }
 
@@ -72,7 +72,7 @@
 .btn-regresar {
     margin-top: 40px;
     padding: 10px 20px;
-    background: #e30074;
+    background: #d73387;
     border: none;
     color: white;
     font-size: 16px;
@@ -83,6 +83,6 @@
 }
 
 .btn-regresar:hover {
-    background: #c60067;
+    background: #d73387;
 }
 
