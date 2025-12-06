@@ -2,17 +2,10 @@
 .top-bar {
     background-color: #d73387;
     color: white;
-    padding: 12px 20px;
+    padding: 25px 34px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
-
-.hamburger span {
-    width: 25px;
-    height: 3px;
-    background: white;
-    margin: 4px 0;
 }
 
 .title-left {
@@ -155,6 +148,7 @@
     border-radius: 6px;
     cursor: pointer;
 }
+
 
 
 
