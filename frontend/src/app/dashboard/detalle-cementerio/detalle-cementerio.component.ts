@@ -1,27 +1,22 @@
 import { Component, OnInit, Injectable } from '@angular/core';
-import { CommonModule } from '@angular/common'; 
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { catchError, of, Observable } from 'rxjs';
 
-// --- MOCK INTERFACES Y SERVICIO (Para la funcionalidad en un entorno aislado) ---
-
-// 1. Interfaz del Detalle (Simulada)
 export interface CementerioDetalle {
     id: number;
     nombre: string;
     ubicacion: string;
-    tipo: string; 
+    tipo: string;
     datosTabla: string[];
 }
 
-// 2. Servicio Mock (Simulando CementerioService)
 @Injectable({ providedIn: 'root' })
 export class CementerioService {
-    // Es necesario inyectar HttpClient en el constructor si se usa en la app real
-    constructor(private http: HttpClient) {} 
-    
-    // Simula la llamada HTTP
+    constructor(private http: HttpClient) {}
+
+    // ⭐ ESTE MÉTODO SOLO ES MOCK, NO LO CAMBIÉ
     obtenerDetallePorId(id: number): Observable<CementerioDetalle> {
         const mockData: CementerioDetalle = {
             id: id,
@@ -30,76 +25,111 @@ export class CementerioService {
             tipo: (id % 2 === 0) ? 'General' : 'Jardín',
             datosTabla: Array(10).fill(0).map((_, i) => `Metadato ${i + 1}`)
         };
-        // Retorna un Observable con los datos simulados
-        return of(mockData); 
+
+        return of(mockData);
     }
 }
-// ----------------------------------------------------------------------------------
 
 @Component({
-  selector: 'app-detalle-cementerio',
-  standalone: true,
-  imports: [CommonModule, HttpClientModule],
-  templateUrl: './detalle-cementerio.component.html',
-  styleUrls: ['./detalle-cementerio.component.css']
+  selector: 'app-detalle-cementerio',
+  standalone: true,
+  imports: [CommonModule, HttpClientModule],
+  templateUrl: './detalle-cementerio.component.html',
+  styleUrls: ['./detalle-cementerio.component.css']
 })
 export class DetalleCementerioComponent implements OnInit {
 
-  columnas = Array(10).fill(0);
+  columnas: string[] = [];   // 🔥 Inicializa vacío (lo llenamos dinámicamente)
 
-  cementerioId: number | null = null;
-  cementerioDetalle: CementerioDetalle | null = null; // CLAVE
-  cargando: boolean = true;
-  errorCarga: string | null = null;
+  cementerioId: number | null = null;
+  cementerioDetalle: CementerioDetalle | null = null;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private cementerioService: CementerioService,
-    // Se requiere el HttpClient para el mock del servicio
-    private http: HttpClient 
-  ) { }
+  cargando = true;
+  errorCarga: string | null = null;
 
-  ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    
-    if (idParam) {
-      this.cementerioId = +idParam;
-      this.cargarDetalleCementerio(this.cementerioId);
-    } else {
-      this.errorCarga = "ID de cementerio no encontrado en la URL.";
-      this.cargando = false;
-    }
-  }
+  /** Vista dinámica */
+  vista: 'lista' | 'parcela' | 'documentos' | 'pagos' = 'lista';
+  parcelaSeleccionada: number | null = null;
 
-  cargarDetalleCementerio(id: number): void {
-    this.cargando = true;
-    this.errorCarga = null;
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private cementerioService: CementerioService
+  ) {}
 
-    // Suscripción al servicio
-    this.cementerioService.obtenerDetallePorId(id).pipe(
-      catchError(err => {
-        this.errorCarga = `No se pudo cargar el detalle del cementerio ID ${id}.`;
-        this.cargando = false;
-        console.error('Error al cargar detalle:', err);
-        return of(null);
-      })
-    )
-    .subscribe({
-      next: (data: CementerioDetalle | null) => {
-        if (data) {
-          this.cementerioDetalle = data;
-        } else {
-          if (!this.errorCarga) {
-            this.errorCarga = `No se encontraron datos para el cementerio ID ${id}.`;
-          }
-        }
-        this.cargando = false;
-      }
-    });
-  }
+  ngOnInit(): void {
+    const idParam = this.route.snapshot.paramMap.get('id');
 
-  goBack(): void {
-    this.router.navigate(['/cementerios']);
-  }
+    if (idParam) {
+      this.cementerioId = +idParam;
+      this.cargarDetalleCementerio(this.cementerioId);
+    } else {
+      this.errorCarga = "ID de cementerio no encontrado.";
+      this.cargando = false;
+    }
+  }
+
+  cargarDetalleCementerio(id: number): void {
+    this.cementerioService.obtenerDetallePorId(id)
+      .pipe(
+        catchError(err => {
+          this.errorCarga = `No se pudo cargar el detalle del cementerio ID ${id}.`;
+          this.cargando = false;
+          return of(null);
+        })
+      )
+      .subscribe(data => {
+
+        if (!data) return;
+
+        this.cementerioDetalle = data;
+
+        // ⭐ NOMBRE EXACTO DEL CEMENTERIO PRIVADO
+        const nombrePrivado = "Cementerio Privado La Libertad";
+
+        // ⭐ Si el nombre del cementerio es EXACTO → solo 2 filas
+        if (data.nombre.trim().toLowerCase() === nombrePrivado.toLowerCase()) {
+          this.columnas = ["Parcela 1", "Parcela 2"];
+        } 
+        // ⭐ Caso contrario → 10 filas
+        else {
+          this.columnas = Array.from({ length: 10 }, (_, i) => `Parcela ${i + 1}`);
+        }
+
+        this.cargando = false;
+      });
+  }
+
+  abrirParcela(num: number) {
+    this.parcelaSeleccionada = num;
+    this.vista = 'parcela';
+  }
+
+  abrirDocumentos(num: number) {
+    this.parcelaSeleccionada = num;
+    this.vista = 'documentos';
+  }
+
+  abrirPagos(num: number) {
+    this.parcelaSeleccionada = num;
+    this.vista = 'pagos';
+  }
+
+  regresarLista() {
+    this.vista = 'lista';
+    this.parcelaSeleccionada = null;
+  }
+
+  goBack() {
+    this.router.navigate(['/cementerios']);
+  }
 }
+
+
+
+
+
+
+
+
+
