@@ -2,13 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router'; 
-// Se mantienen imports de catchError y of por si se usan en la lógica del componente o para futuras expansiones
 import { catchError, of } from 'rxjs'; 
 
 import { CementerioService } from '../../services/cementerio.service'; 
 import { Cementerio } from '../../models/cementerio.interface'; 
 import { AuthService } from '../../auth.service';
-import { LanguageService } from '../../services/language.service'; // Incluido para la traducción
+import { LanguageService } from '../../services/language.service'; 
 
 @Component({
   selector: 'app-cementerios',
@@ -27,10 +26,6 @@ export class CementeriosComponent implements OnInit {
   cargando: boolean = true;
   errorCarga: string | null = null;
   
-  // Variables para el filtro de permisos (de la versión 1)
-  usuarioId: number | null = null;
-  rolUsuario: string | null = null;
-
   // Variable para el idioma (de la versión 2)
   lang = 'es'; 
 
@@ -38,33 +33,23 @@ export class CementeriosComponent implements OnInit {
     private cementerioService: CementerioService,
     private authService: AuthService,
     private router: Router,
-    public languageService: LanguageService // Inyectado para la gestión de idioma
+    public languageService: LanguageService
   ) { }
 
   ngOnInit(): void {
-    // 1. Suscripción al idioma (de la versión 2)
+    // 1. Suscripción al idioma
     this.languageService.currentLang$.subscribe(l => this.lang = l);
     
-    // 2. Carga de datos filtrada por permisos (de la versión 1)
+    // 2. Carga de datos filtrada por permisos (ahora delegada al backend)
     this.cargarCementeriosFiltrados();
   }
 
   cargarCementeriosFiltrados(): void {
-    this.usuarioId = this.authService.getUserId();
-    this.rolUsuario = this.authService.getUserRole();
+    // ⭐ Se eliminó la validación manual de usuarioId y rolUsuario
     this.cargando = true;
 
-    if (!this.usuarioId || !this.rolUsuario) {
-        this.errorCarga = 'Faltan datos de sesión. Redirigiendo...';
-        // Se mantiene la redirección con un pequeño delay
-        setTimeout(() => {
-            this.authService.logout();
-            this.router.navigate(['/login']);
-        }, 1000); 
-        return;
-    }
-    
-    this.cementerioService.obtenerCementeriosPorUsuario(this.usuarioId, this.rolUsuario).subscribe({
+    // La llamada es simple, el Interceptor adjunta el token y el backend filtra.
+    this.cementerioService.obtenerCementeriosPorUsuario().subscribe({
       next: (data) => {
         this.cementerios = data;
         this.cargando = false;
@@ -72,6 +57,8 @@ export class CementeriosComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar cementerios filtrados:', err);
+        // Los errores 401 (no autenticado) son manejados por el Interceptor.
+        // Aquí manejamos otros errores de la llamada.
         if (err.status === 403) {
             this.errorCarga = 'No tiene permisos para ver esta lista.';
         } else {
@@ -84,7 +71,6 @@ export class CementeriosComponent implements OnInit {
   
   cerrarSesion(): void {
     this.authService.logout();
-    // Se añade la navegación de la versión 2
     this.router.navigate(['/login']);
   }
 
@@ -101,7 +87,7 @@ export class CementeriosComponent implements OnInit {
       this.router.navigate(['/cementerios', id]);
   }
   
-  // Métodos de gestión de idioma (de la versión 2)
+  // Métodos de gestión de idioma
   cambiarIdioma(): void {
     const nuevo = this.lang === 'es' ? 'en' : 'es';
     this.languageService.setLanguage(nuevo);
@@ -111,4 +97,3 @@ export class CementeriosComponent implements OnInit {
     return this.languageService.translate(key);
   }
 }
-

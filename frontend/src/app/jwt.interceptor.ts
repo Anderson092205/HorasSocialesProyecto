@@ -1,45 +1,53 @@
 import { HttpInterceptorFn, HttpErrorResponse } from "@angular/common/http";
 import { inject } from "@angular/core";
-import { AuthService } from "./auth.service";
+import { AuthService } from "./auth.service"; // Asume que su servicio de auth se llama así
 import { catchError, throwError } from 'rxjs';
-import { Router } from "@angular/router"; // 🚨 Necesario para la redirección
+import { Router } from "@angular/router";
 
+/**
+ * Interceptor para adjuntar el Token JWT en el encabezado de las peticiones
+ * y manejar globalmente los errores de autorización (401).
+ */
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
+    
     const authService = inject(AuthService);
-    const router = inject(Router); // Inyectamos el Router
+    const router = inject(Router);
     const token = authService.getToken(); 
 
-    // Excluir la URL de login
+    // 1. Lógica de Exclusión: No adjuntar el token a las rutas de login
     if (req.url.includes('auth') || req.url.includes('login')) {
         return next(req);
     }
     
     let clonedReq = req;
 
+    // 2. Adjuntar el Token JWT
     if (token) {
-        // Clonamos y añadimos el token si existe
         clonedReq = req.clone({
             setHeaders: {
+                // Añade el encabezado estándar: Authorization: Bearer <token>
                 Authorization: `Bearer ${token}` 
             }
         });
     }
 
-    // 🚨 PASO CLAVE: Capturar la respuesta y manejar el 401
+    // 3. Manejo Global de Errores (401)
     return next(clonedReq).pipe(
       catchError((error: HttpErrorResponse) => {
-        // Verificar si es un error de autorización (401)
-        if (error.status === 401) {
-          console.error('Token caducado o no válido. Forzando cierre de sesión.');
-          
-          // 1. Forzar el cierre de sesión (borrar el token de Local Storage)
-          authService.logout();
-          
-          // 2. Redirigir al usuario a la página de login
-          router.navigate(['/login']);
-          
-          // 3. Devolver un observable con el error para que el componente lo sepa
-          return throwError(() => new Error('Sesión expirada. Redirigiendo a login.'));
+        
+        // Verificar si es un error de autorización (token expirado o inválido)
+        if (error.status === 401 || error.status === 403) {
+            
+            console.error('Sesión no válida o caducada. Redirigiendo a login.');
+            
+            // ⭐ ACCIÓN CLAVE: Forzar el cierre de sesión y redirigir
+            authService.logout();
+            
+            // Redirige al login para forzar una nueva autenticación
+            router.navigate(['/login']);
+            
+            // Detenemos la propagación del error para que el componente no lo maneje
+            return throwError(() => new Error('Sesión expirada. Redirigiendo a login.'));
         }
         
         // Para cualquier otro error (500, 404, etc.), simplemente propagarlo.

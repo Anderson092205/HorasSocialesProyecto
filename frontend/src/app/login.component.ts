@@ -4,6 +4,7 @@ import { AuthService, AuthResponse } from './auth.service';
 import { FormsModule } from '@angular/forms'; 
 import { CommonModule } from '@angular/common'; 
 import { HttpClientModule } from '@angular/common/http'; 
+import { catchError } from 'rxjs/operators'; // Necesario si usa throwError en el login
 
 @Component({
   selector: 'app-login',
@@ -32,7 +33,7 @@ export class LoginComponent implements OnInit {
       this.router.navigate(['/cementerios']); 
     }
 
-    // 2. LÓGICA DE RECORDAR: Cargar el estado de la casilla SIEMPRE
+    // 2. LÓGICA DE RECORDAR: Cargar el estado de la casilla
     const savedRememberState = localStorage.getItem(this.REMEMBER_ME_STATE_KEY);
     this.rememberMe = savedRememberState === 'true'; 
 
@@ -42,51 +43,40 @@ export class LoginComponent implements OnInit {
       if (savedUsername) {
         this.correo = savedUsername;
       } else {
-        // Si la casilla está marcada pero no hay correo, desmarcar la casilla
         this.rememberMe = false;
       }
     }
   }
-  
-  // 🔑 FUNCIÓN CLAVE: Guarda el correo inmediatamente si la casilla se marca
-  onRememberMeChange(): void {
-    // Si la casilla está marcada (this.rememberMe es TRUE)
-    if (this.rememberMe) {
-        // SOLO GUARDAMOS EL CORREO SI EL CAMPO NO ESTÁ VACÍO
-        if (this.correo.trim() !== '') {
-            localStorage.setItem(this.REMEMBER_KEY, this.correo); // <--- GUARDADO INMEDIATO
-        }
-        localStorage.setItem(this.REMEMBER_ME_STATE_KEY, 'true');
-    } 
-    // Si la casilla está desmarcada (this.rememberMe es FALSE)
-    else {
-        this.correo = ''; 
-        localStorage.removeItem(this.REMEMBER_KEY);
-        localStorage.setItem(this.REMEMBER_ME_STATE_KEY, 'false');
-    }
-  }
+  
+    // Mantiene la función de cambio para guardar el estado del checkbox
+    onRememberMeChange(): void {
+        localStorage.setItem(this.REMEMBER_ME_STATE_KEY, this.rememberMe ? 'true' : 'false');
+        // Si se desmarca, limpiamos el campo de correo para mejor UX
+        if (!this.rememberMe) {
+            this.correo = '';
+            localStorage.removeItem(this.REMEMBER_KEY);
+        }
+    }
 
   onLogin(): void {
     this.errorMessage = ''; 
     this.cargando = true;
 
-    // 4. LÓGICA DE GUARDADO FINAL (Mecanismo de seguridad)
-    // Ya que la lógica principal de guardado está en onRememberMeChange,
-    // esta sección solo asegura que el estado sea el correcto antes de la llamada API.
+    // ⭐ LÓGICA DE GUARDADO FINAL antes de llamar a la API
     if (this.rememberMe) {
-        // Si la casilla está marcada, aseguramos que el valor actual se guarde
-        localStorage.setItem(this.REMEMBER_KEY, this.correo);
+        // Guardar el estado de la casilla Y el correo actual
         localStorage.setItem(this.REMEMBER_ME_STATE_KEY, 'true');
+        localStorage.setItem(this.REMEMBER_KEY, this.correo.trim());
     } else {
-        // Si la casilla no está marcada, aseguramos que el correo se elimine.
-        localStorage.removeItem(this.REMEMBER_KEY);
+        // Si no está marcado, asegurar que se elimine el correo
         localStorage.setItem(this.REMEMBER_ME_STATE_KEY, 'false');
+        localStorage.removeItem(this.REMEMBER_KEY);
     }
 
     // 5. Llamada al servicio de autenticación
     this.authService.login(this.correo, this.password).subscribe({
       next: (response: AuthResponse) => {
-        // Usa el método setAuthData del servicio para guardar la sesión
+        // Usa el método setAuthData del servicio para guardar el token, ID y Rol
         this.authService.setAuthData(response.token, response.id, response.rol);
         this.cargando = false;
         

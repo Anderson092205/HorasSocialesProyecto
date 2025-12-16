@@ -46,15 +46,18 @@ public class AuthController {
                     .orElseThrow(() -> new BadCredentialsException("Usuario no encontrado en la base de datos después de autenticación exitosa."));
 
             // 4. Genera el token JWT
-            final String jwt = jwtUtil.generateToken(userDetails);
+            final String jwt = jwtUtil.generateTokenWithClaims(
+                    userDetails,
+                    usuario.getIdUsuario(),
+                    usuario.getRol().getNombre() // ⭐ USANDO getNombre() para seguridad
+            );
 
             // 5. Devuelve la respuesta COMPLETA
             AuthResponse response = new AuthResponse(
                     jwt,
-                    usuario.getIdUsuario(), // <--- CORRECCIÓN: Llamamos al getter generado por Lombok
-                    usuario.getRol().toString()
+                    usuario.getIdUsuario(),
+                    usuario.getRol().getNombre() // ⭐ USANDO getNombre() para seguridad
             );
-
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException e) {

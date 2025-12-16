@@ -3,12 +3,14 @@ package sv.gob.cementerios.cementeriosle.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import sv.gob.cementerios.cementeriosle.dto.*;
 import sv.gob.cementerios.cementeriosle.model.*;
 import sv.gob.cementerios.cementeriosle.repository.*;
-import sv.gob.cementerios.cementeriosle.service.CementerioService;
+import sv.gob.cementerios.cementeriosle.service.CementerioService; // Asegúrese de que su interfaz está aquí
 
 import jakarta.persistence.EntityNotFoundException;
+import java.util.Collections; // Añadido para listas vacías
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,18 +20,18 @@ public class CementerioServiceImpl implements CementerioService {
     @Autowired private CementerioRepository cementerioRepository;
     @Autowired private DifuntoRepository difuntoRepository;
     @Autowired private PropietarioRepository propietarioRepository;
-
-    // <--- INYECCIÓN CLAVE: Tu repositorio de permisos
-    @Autowired private AccesoCementerioRepository accesoCementerioRepository;
+    @Autowired private AccesoCementerioRepository accesoCementerioRepository; // Repositorio de permisos
 
     // ==========================================================
-    // 1. MÉTODO DASHBOARD (APLICACIÓN DEL FILTRO DE PERMISOS)
+    // 1. MÉTODO DASHBOARD (APLICACIÓN DEL FILTRO DE PERMISOS SEGURO)
     // ==========================================================
     @Override
     @Transactional(readOnly = true)
     public List<CementerioResponseDTO> obtenerCementeriosPorUsuario(Integer usuarioId, String rolUsuario) {
 
-        // El rol "ADMIN" puede ver todos los cementerios
+        // ⭐ Lógica de Autorización Basada en Rol (Usando datos seguros del JWT) ⭐
+
+        // 1. Rol "ADMIN": Puede ver todos los cementerios
         if ("ADMIN".equals(rolUsuario)) {
             List<Cementerio> cementerios = cementerioRepository.findAll();
             return cementerios.stream()
@@ -37,25 +39,29 @@ public class CementerioServiceImpl implements CementerioService {
                     .collect(Collectors.toList());
         }
 
-        // Si no es ADMIN (OPERADOR/CONSULTA), filtramos por la tabla de acceso
+        // 2. Otros Roles (OPERADOR, CONSULTA, etc.): Filtrar por tabla de acceso
 
-        // 1. Usa tu repositorio para obtener los registros de acceso del usuario
+        // a. Obtener los registros de acceso que dan permiso de ver al usuario
         List<AccesoCementerio> accesos = accesoCementerioRepository.findByUsuarioIdUsuario(usuarioId);
 
-        // 2. Extrae los IDs de los Cementerios a los que tiene acceso y que están activos
+        if (accesos.isEmpty()) {
+            return Collections.emptyList(); // Retorna una lista vacía si no tiene ningún registro de acceso
+        }
+
+        // b. Extraer solo los IDs de los Cementerios a los que tiene permiso activo
         List<Integer> cementerioIds = accesos.stream()
-                .filter(AccesoCementerio::getPuedeVer) // Asegura que solo tome los que tienen permiso
+                .filter(AccesoCementerio::getPuedeVer)
                 .map(acceso -> acceso.getCementerio().getIdCementerio())
                 .collect(Collectors.toList());
 
         if (cementerioIds.isEmpty()) {
-            return List.of(); // Retorna una lista vacía si no hay permisos
+            return Collections.emptyList(); // Retorna una lista vacía si los permisos son nulos o están inactivos
         }
 
-        // 3. Busca las entidades Cementerio usando la lista de IDs obtenida
+        // c. Busca las entidades Cementerio usando la lista de IDs obtenida
         List<Cementerio> cementerios = cementerioRepository.findAllById(cementerioIds);
 
-        // 4. Mapea la lista de Entidades a una lista de DTOs
+        // d. Mapea la lista de Entidades a una lista de DTOs
         return cementerios.stream()
                 .map(this::mapearADTO)
                 .collect(Collectors.toList());
@@ -67,7 +73,11 @@ public class CementerioServiceImpl implements CementerioService {
     @Override
     @Transactional(readOnly = true)
     public CementerioDetalleDTO obtenerDetallePorId(Integer idCementerio) {
-        // ... (El resto del método 'obtenerDetallePorId' se mantiene igual)
+        // En una implementación de seguridad completa, se debería añadir aquí la
+        // verificación de permisos: ¿El usuario actual (leído del JWT) tiene permiso
+        // para ver este idCementerio?
+        // Si la respuesta es NO, lanzar una excepción de Acceso Denegado.
+
         Cementerio cementerio = cementerioRepository.findById(idCementerio)
                 .orElseThrow(() -> new EntityNotFoundException("Cementerio no encontrado con ID: " + idCementerio));
 
@@ -77,6 +87,7 @@ public class CementerioServiceImpl implements CementerioService {
         detalleDTO.setTipoCementerio(cementerio.getTipo());
 
         // Obtener CONTEO REAL de Espacios
+        // Se asume que estos métodos existen en su CementerioRepository
         Long total = cementerioRepository.contarTotalEspaciosPorCementerio(idCementerio);
         Long ocupados = cementerioRepository.contarEspaciosOcupadosPorCementerio(idCementerio);
         Long disponibles = total - ocupados;
@@ -103,7 +114,6 @@ public class CementerioServiceImpl implements CementerioService {
     }
 
     // --- Métodos de Mapeo (Auxiliares) ---
-
     private CementerioResponseDTO mapearADTO(Cementerio cementerio) {
         CementerioResponseDTO dto = new CementerioResponseDTO();
         dto.setId(cementerio.getIdCementerio());
@@ -112,7 +122,7 @@ public class CementerioServiceImpl implements CementerioService {
         return dto;
     }
 
-    // ... (Mantén tus otros métodos de mapeo como mapearDifuntoADTO y mapearPropietarioADTO)
+    // ... (Mantén tus otros métodos de mapeo: mapearDifuntoADTO y mapearPropietarioADTO)
     private DifuntoDTO mapearDifuntoADTO(Difunto difunto) {
         DifuntoDTO dto = new DifuntoDTO();
         dto.setIdDifunto(difunto.getIdDifunto());
