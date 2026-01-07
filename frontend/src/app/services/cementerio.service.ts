@@ -15,14 +15,9 @@ export class CementerioService {
 
   constructor(private http: HttpClient) { }
 
-  /**
-   * Obtiene la lista de cementerios.
-   * El filtrado por usuario (ID/Rol) se delega al backend, el cual
-   * recibe el token JWT adjuntado por el interceptor.
-   */
-  // ⭐ FIRMA SIMPLIFICADA: Sin parámetros de seguridad.
+  
+  //  FIRMA SIMPLIFICADA: Sin parámetros de seguridad.
   obtenerCementeriosPorUsuario(): Observable<Cementerio[]> {
-    // Llama al endpoint GET /api/v1/cementerios
     return this.http.get<Cementerio[]>(API_URL);
   }
   

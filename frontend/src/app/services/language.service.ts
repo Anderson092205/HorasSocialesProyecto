@@ -12,8 +12,8 @@ export class LanguageService {
   // Traducciones para todo el sitio
   private translations: any = {
     es: {
-      soporte: "SOPORTE TÉCNICO",
-      idioma: "ESPAÑOL – INTERNACIONAL (ES)",
+      soporte: "SOPORTE TÉCNICO ",
+      idioma: "ESPAÑOL - INTERNACIONAL",
       bienvenida: "Bienvenidos a Cementerios La Libertad Este",
       ir: "Ir a...",
       logout: "Cerrar Sesión",
@@ -22,7 +22,7 @@ export class LanguageService {
     },
     en: {
       soporte: "TECHNICAL SUPPORT",
-      idioma: "ENGLISH – INTERNATIONAL (EN)",
+      idioma: "ENGLISH - INTERNATIONAL (EN)",
       bienvenida: "Welcome to La Libertad Este Cemeteries",
       ir: "Go to...",
       logout: "Logout",

@@ -40,7 +40,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
             
             console.error('Sesión no válida o caducada. Redirigiendo a login.');
             
-            // ⭐ ACCIÓN CLAVE: Forzar el cierre de sesión y redirigir
+            //  ACCIÓN CLAVE: Forzar el cierre de sesión y redirigir
             authService.logout();
             
             // Redirige al login para forzar una nueva autenticación
