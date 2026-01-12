@@ -18,6 +18,11 @@ public class Cementerio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_cementerio")
     private Integer idCementerio;
 
