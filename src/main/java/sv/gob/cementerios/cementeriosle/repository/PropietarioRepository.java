@@ -5,19 +5,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sv.gob.cementerios.cementeriosle.model.Propietario;
+
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface PropietarioRepository extends JpaRepository<Propietario, Integer> {
+public interface PropietarioRepository extends JpaRepository<Propietario, Long> {
 
-    // Consulta nativa (o JPQL compleja) para obtener propietarios por cementerio
-    // Usaremos JOINs a través de las tablas intermedias (parcela_propietario -> lote)
-    @Query(value = "SELECT p.*, COUNT(pp.id_lote) as totalLotes " +
-            "FROM propietario p " +
-            "JOIN parcela_propietario pp ON p.id_propietario = pp.id_propietario " +
-            "JOIN lote l ON pp.id_lote = l.id_lote " +
-            "WHERE l.id_cementerio = :idCementerio " +
-            "GROUP BY p.id_propietario, p.nombre, p.telefono, p.correo",
-            nativeQuery = true)
+    // ✅ Buscar propietario por correo (útil para validaciones de login o duplicados)
+    Optional<Propietario> findByCorreo(String correo);
+
+    // ✅ Obtener todos los propietarios asociados a un cementerio específico
+    @Query("SELECT p FROM Propietario p WHERE p.cementerio.idCementerio = :idCementerio")
     List<Propietario> findPropietariosByCementerioId(@Param("idCementerio") Integer idCementerio);
 }
+
+
