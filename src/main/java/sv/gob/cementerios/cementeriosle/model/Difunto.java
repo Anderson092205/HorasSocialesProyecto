@@ -1,42 +1,68 @@
 package sv.gob.cementerios.cementeriosle.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDate;
 
+@Data
 @Entity
 @Table(name = "difunto")
 public class Difunto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_difunto")
-    private Integer idDifunto;
+    @Column(name = "id_difunto") // 🔑 nombre de columna más claro
+    private Long idDifunto;
 
-    @Column(name = "nombre", nullable = false, length = 100)
+    @Column(nullable = false)
     private String nombre;
 
-    @Column(name = "fecha_nacimiento")
-    private LocalDate fechaNacimiento;
-
-    @Column(name = "fecha_defuncion")
+    @Column(name = "fecha_defuncion", nullable = false)
     private LocalDate fechaDefuncion;
 
-    // NOTA: La columna 'ubicacion' en tu esquema no tiene FK, la usaremos para filtrar por cementerio
-    @Column(name = "id_cementerio")
-    private Integer idCementerio;
+    @ManyToOne
+    @JoinColumn(name = "espacio_id", nullable = false)
+    private Espacio espacio;
 
-    // --- Getters y Setters (Omitidos por brevedad) ---
-    // ...
+
+    // ======================
+    // CONSTRUCTOR VACÍO
+    // ======================
     public Difunto() {}
 
-    public Integer getIdDifunto() { return idDifunto; }
-    public void setIdDifunto(Integer idDifunto) { this.idDifunto = idDifunto; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public LocalDate getFechaNacimiento() { return fechaNacimiento; }
-    public void setFechaNacimiento(LocalDate fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
-    public LocalDate getFechaDefuncion() { return fechaDefuncion; }
-    public void setFechaDefuncion(LocalDate fechaDefuncion) { this.fechaDefuncion = fechaDefuncion; }
-    public Integer getIdCementerio() { return idCementerio; }
-    public void setIdCementerio(Integer idCementerio) { this.idCementerio = idCementerio; }
+    // ======================
+    // GETTERS Y SETTERS
+    // ======================
+    public Long getIdDifunto() {
+        return idDifunto;
+    }
+
+    public void setIdDifunto(Long idDifunto) {
+        this.idDifunto = idDifunto;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public LocalDate getFechaDefuncion() {
+        return fechaDefuncion;
+    }
+
+    public void setFechaDefuncion(LocalDate fechaDefuncion) {
+        this.fechaDefuncion = fechaDefuncion;
+    }
+
+    public Espacio getEspacio() {
+        return espacio;
+    }
+
+    public void setEspacio(Espacio espacio) {
+        this.espacio = espacio;
+    }
 }
+
