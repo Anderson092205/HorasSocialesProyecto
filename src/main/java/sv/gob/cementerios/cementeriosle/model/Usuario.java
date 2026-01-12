@@ -1,22 +1,69 @@
 package sv.gob.cementerios.cementeriosle.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 
 @Entity
 @Table(name = "usuario")
-@Data
 public class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idUsuario;
+    private Long idUsuario;
 
-    private String correo;
+    @Column(nullable = false, unique = true)
+    private String correo;   // 🔄 antes era username
 
-    @Column(name = "contraseña")
-    private String contrasena;
+    @Column(nullable = false)
+    private String contrasena;   // 🔄 antes era password
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_rol")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Rol rol;
+
+    // ======================
+    // CONSTRUCTOR VACÍO
+    // ======================
+    public Usuario() {
+    }
+
+    // ======================
+    // GETTERS Y SETTERS
+    // ======================
+
+    public Long getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(Long idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getContrasena() {
+        return contrasena;
+    }
+
+    /**
+     * ⚠️ Nota de seguridad:
+     * Usa BCrypt para encriptar contraseñas antes de guardarlas.
+     */
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
+    }
+
+    public Rol getRol() {
+        return rol;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
 }
+
