@@ -44,7 +44,7 @@ public class CementerioServiceImpl implements CementerioService {
 
         // 2. Extrae los IDs de los Cementerios a los que tiene acceso y que están activos
         List<Integer> cementerioIds = accesos.stream()
-                .filter(AccesoCementerio::getPuedeVer) // Asegura que solo tome los que tienen permiso
+                .filter(acceso -> acceso.getPuedeVer()) // Asegura que solo tome los que tienen permiso
                 .map(acceso -> acceso.getCementerio().getIdCementerio())
                 .collect(Collectors.toList());
 
@@ -115,7 +115,7 @@ public class CementerioServiceImpl implements CementerioService {
     // ... (Mantén tus otros métodos de mapeo como mapearDifuntoADTO y mapearPropietarioADTO)
     private DifuntoDTO mapearDifuntoADTO(Difunto difunto) {
         DifuntoDTO dto = new DifuntoDTO();
-        dto.setIdDifunto(difunto.getIdDifunto());
+        dto.setIdDifunto(Math.toIntExact(difunto.getIdDifunto()));
         dto.setNombre(difunto.getNombre());
         dto.setFechaDefuncion(difunto.getFechaDefuncion());
         dto.setUbicacion("Ubicación pendiente de detalle (Lote/Fila/Espacio)");
@@ -124,7 +124,7 @@ public class CementerioServiceImpl implements CementerioService {
 
     private PropietarioDTO mapearPropietarioADTO(Propietario propietario, Long totalLotes) {
         PropietarioDTO dto = new PropietarioDTO();
-        dto.setIdPropietario(propietario.getIdPropietario());
+        dto.setIdPropietario(Math.toIntExact(propietario.getIdPropietario()));
         dto.setNombre(propietario.getNombre());
         dto.setTelefono(propietario.getTelefono());
         dto.setCorreo(propietario.getCorreo());
