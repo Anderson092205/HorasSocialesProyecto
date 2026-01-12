@@ -10,7 +10,11 @@ public interface CementerioService {
     // 🚨 Este es el método nuevo/reemplazado
     List<CementerioResponseDTO> obtenerCementeriosPorUsuario(Integer usuarioId, String rolUsuario);
 
+    // En CementerioService.java añadir:
+    List<CementerioResponseDTO> listarTodos();
+
     // Este método ya existía
     CementerioDetalleDTO obtenerDetallePorId(Integer idCementerio);
+
 
 }

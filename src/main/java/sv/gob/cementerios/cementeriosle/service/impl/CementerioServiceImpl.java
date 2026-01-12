@@ -102,6 +102,18 @@ public class CementerioServiceImpl implements CementerioService {
         return detalleDTO;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<CementerioResponseDTO> listarTodos() {
+        // Obtenemos absolutamente todos los cementerios de la base de datos
+        List<Cementerio> cementerios = cementerioRepository.findAll();
+
+        // Reutilizamos tu método mapearADTO que ya definiste abajo
+        return cementerios.stream()
+                .map(this::mapearADTO)
+                .collect(Collectors.toList());
+    }
+
     // --- Métodos de Mapeo (Auxiliares) ---
 
     private CementerioResponseDTO mapearADTO(Cementerio cementerio) {

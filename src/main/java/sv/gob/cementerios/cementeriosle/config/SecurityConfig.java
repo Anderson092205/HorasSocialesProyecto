@@ -18,6 +18,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import sv.gob.cementerios.cementeriosle.security.JwtAuthenticationFilter;
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -42,47 +43,40 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Asegúrate de que esta URL sea la correcta para tu proyecto Angular
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // Uso de List.of como sugiere IntelliJ para mayor claridad
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        // ⭐ SE AGREGÓ "PATCH" AQUÍ
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Deshabilita CSRF para APIs REST
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Aplica la configuración CORS
-
-                .sessionManagement(session -> session
-                        // Spring Security no creará ni usará sesiones HTTP (es Stateless, para JWT)
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
-                // Configuración de Autorización
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Ruta de Login (Auth) es pública
-                        .requestMatchers("/api/auth/login").permitAll()
+                        // 1. RUTAS PÚBLICAS (Sin token)
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/usuarios/actualizar-password-temporal").permitAll()
 
-                        // esto es para dar acceso a informatica a solo crear Usuarios
-                        .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasRole("INFORMATICA")
-                        .requestMatchers(HttpMethod.GET, "/api/usuarios/**").hasRole("INFORMATICA")
-
-                        // para que ambos puedan visualizar lo mismo
+                        // 2. RUTAS PROTEGIDAS POR ROL
+                        // Importante: No uses /** si quieres que la regla de arriba (el PATCH) funcione bien
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios/crear").hasRole("INFORMATICA")
 
                         .requestMatchers("/api/v1/cementerios/**").hasAnyRole("INFORMATICA", "ADMIN")
+
+                        // 3. TODO LO DEMÁS REQUIERE LOGIN
                         .anyRequest().authenticated()
                 );
 
-        // INSERCIÓN DEL FILTRO JWT
-        // Se añade antes del filtro estándar de autenticación de usuario y contraseña
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }

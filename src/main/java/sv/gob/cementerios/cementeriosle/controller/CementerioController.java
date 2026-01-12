@@ -52,4 +52,9 @@ public class CementerioController {
         CementerioDetalleDTO detalle = cementerioService.obtenerDetallePorId(id);
         return ResponseEntity.ok(detalle);
     }
+
+    @GetMapping("/lista-completa")
+    public ResponseEntity<List<CementerioResponseDTO>> obtenerTodosParaSelect() {
+        return ResponseEntity.ok(cementerioService.listarTodos());
+    }
 }
