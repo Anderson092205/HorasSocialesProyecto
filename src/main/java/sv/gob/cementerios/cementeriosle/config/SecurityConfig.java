@@ -3,6 +3,7 @@ package sv.gob.cementerios.cementeriosle.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -67,8 +68,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Ruta de Login (Auth) es pública
                         .requestMatchers("/api/auth/login").permitAll()
-                        // Permite también el endpoint de conexión de prueba (si existe)
-                        // Todas las demás peticiones requieren autenticación
+
+                        // esto es para dar acceso a informatica a solo crear Usuarios
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasRole("INFORMATICA")
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios/**").hasRole("INFORMATICA")
+
+                        // para que ambos puedan visualizar lo mismo
+
+                        .requestMatchers("/api/v1/cementerios/**").hasAnyRole("INFORMATICA", "ADMIN")
                         .anyRequest().authenticated()
                 );
 

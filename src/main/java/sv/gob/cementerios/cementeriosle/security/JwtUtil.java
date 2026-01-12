@@ -27,8 +27,18 @@ public class JwtUtil {
     }
 
     // ================= GENERACIÓN DEL TOKEN =================
-    public String generateToken(UserDetails userDetails) {
+
+    public String generateTokenWithClaims(
+            UserDetails userDetails,
+            Integer idUsuario,
+            String rol) {
+
         Map<String, Object> claims = new HashMap<>();
+
+        // ⭐ CLAIMS PERSONALIZADOS DE NEGOCIO ⭐
+        claims.put("userId", idUsuario);
+        claims.put("rol", rol);
+
         return createToken(claims, userDetails.getUsername());
     }
 
@@ -38,7 +48,8 @@ public class JwtUtil {
                 .setSubject(subject) // Correo del usuario
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 // Token expira en 10 horas
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                // 1000 milisegundos * 60 segundos = 60,000 milisegundos (1 minuto)
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 5))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -72,5 +83,18 @@ public class JwtUtil {
             System.err.println("JWT validation failed: " + e.getMessage());
             return false;
         }
+    }
+    // ================= EXTRACTORES DE CLAIMS PERSONALIZADOS =================
+
+    // Extrae el ID del usuario del token
+    public Integer extractUserId(String token) {
+        // Busca el claim "userId" y lo resuelve como Integer
+        return extractClaim(token, claims -> claims.get("userId", Integer.class));
+    }
+
+    // Extrae el rol del usuario del token
+    public String extractRol(String token) {
+        // Busca el claim "rol" y lo resuelve como String
+        return extractClaim(token, claims -> claims.get("rol", String.class));
     }
 }

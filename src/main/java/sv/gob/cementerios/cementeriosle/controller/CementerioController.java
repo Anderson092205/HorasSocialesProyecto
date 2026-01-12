@@ -10,8 +10,8 @@ import sv.gob.cementerios.cementeriosle.service.CementerioService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/cementerios") // Ruta base
-@CrossOrigin(origins = "http://localhost:4200") // CORS Habilitado
+@RequestMapping("/api/v1/cementerios")
+@CrossOrigin(origins = "http://localhost:4200")
 public class CementerioController {
 
     @Autowired
@@ -19,20 +19,22 @@ public class CementerioController {
 
     // ==========================================================
     // 1. ENDPOINT DE LISTADO SEGURO (Manejo de Permisos)
-    //    Ruta: GET /api/v1/cementerios?usuarioId=X&rol=Y
+    //    Ruta: GET /api/v1/cementerios
     // ==========================================================
     @GetMapping
     public ResponseEntity<List<CementerioResponseDTO>> obtenerCementeriosPorUsuario(
-            // El frontend Angular debe enviar estos dos parámetros después del login
-            @RequestParam Integer usuarioId,
-            @RequestParam String rol) {
+            // ⭐ CAMBIO CRÍTICO DE SEGURIDAD ⭐
+            // Obtenemos los datos de la solicitud, donde fueron colocados por el filtro JWT.
+            // Estos valores son seguros, pues provienen de un token firmado.
+            @RequestAttribute("usuarioId") Integer usuarioId,
+            @RequestAttribute("rol") String rol) {
 
         // Llama al servicio, que internamente filtra por ADMIN o por tabla de accesos
         List<CementerioResponseDTO> cementerios =
+                // Usa el nombre de método correcto de su implementación de servicio
                 cementerioService.obtenerCementeriosPorUsuario(usuarioId, rol);
 
         if (cementerios.isEmpty()) {
-            // Devuelve 200 OK con una lista vacía si no hay resultados, lo que Angular interpreta
             return ResponseEntity.ok(cementerios);
         }
 
@@ -45,7 +47,8 @@ public class CementerioController {
     // ==========================================================
     @GetMapping("/{id}")
     public ResponseEntity<CementerioDetalleDTO> obtenerDetalleCementerio(@PathVariable Integer id) {
-        // Llama al servicio para obtener el detalle consolidado
+        // En un sistema completamente seguro, esta función también debería verificar si
+        // el usuario actual tiene permiso para ver este ID específico.
         CementerioDetalleDTO detalle = cementerioService.obtenerDetallePorId(id);
         return ResponseEntity.ok(detalle);
     }

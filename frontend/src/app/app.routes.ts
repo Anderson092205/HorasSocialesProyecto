@@ -5,6 +5,7 @@ import { DetalleCementerioComponent } from './dashboard/detalle-cementerio/detal
 
 // Importación del Guard que protege las rutas
 import { authGuard } from './auth.guard'; 
+import { CrearUsuarioComponent } from './gestion-usuarios/crear-usuario.component';
 
 export const routes: Routes = [
   
@@ -23,6 +24,14 @@ export const routes: Routes = [
     path: 'detalle-cementerio/:id', 
     component: DetalleCementerioComponent,
     canActivate: [authGuard] // Aplicamos el Guard de autenticación
+  },
+
+  { 
+    path: 'usuarios/crear', 
+    component: CrearUsuarioComponent,
+    canActivate: [authGuard],
+    // Opcional: Si tu guard maneja roles, puedes pasarle el dato aquí:
+    data: { role: 'INFORMATICA' } 
   },
   
   // 4. Redirección Inicial y Wildcard

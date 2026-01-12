@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-// RUTA CRÍTICA: La ruta debe ser correcta. Si está en la misma carpeta, usa './auth.service'
 import { AuthService, AuthResponse } from './auth.service'; 
 import { FormsModule } from '@angular/forms'; 
 import { CommonModule } from '@angular/common'; 
 import { HttpClientModule } from '@angular/common/http'; 
+import { catchError } from 'rxjs/operators'; // Necesario si usa throwError en el login
 
 @Component({
   selector: 'app-login',
@@ -14,44 +14,69 @@ import { HttpClientModule } from '@angular/common/http';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+  // Variables del formulario
   correo = '';
   password = '';
   errorMessage: string = '';
   rememberMe: boolean = false; 
   cargando: boolean = false;
 
+  // Constantes para localStorage
   private readonly REMEMBER_KEY = 'remember_username';
+  private readonly REMEMBER_ME_STATE_KEY = 'remember_me_state'; 
 
   constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit(): void {
-    // 1. LÓGICA COMPLETA DE RECORDAR: Cargar el nombre de usuario si fue guardado
-    const savedUsername = localStorage.getItem(this.REMEMBER_KEY);
-    if (savedUsername) {
-      this.correo = savedUsername;
-      this.rememberMe = true;
-    }
-    
-    // 2. Redirección si ya está logeado
+    // 1. Redirección si ya está logeado
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/cementerios']); 
     }
+
+    // 2. LÓGICA DE RECORDAR: Cargar el estado de la casilla
+    const savedRememberState = localStorage.getItem(this.REMEMBER_ME_STATE_KEY);
+    this.rememberMe = savedRememberState === 'true'; 
+
+    // 3. LÓGICA DE RECORDAR: Cargar el nombre de usuario SOLO si 'rememberMe' es true
+    if (this.rememberMe) {
+      const savedUsername = localStorage.getItem(this.REMEMBER_KEY);
+      if (savedUsername) {
+        this.correo = savedUsername;
+      } else {
+        this.rememberMe = false;
+      }
+    }
   }
+  
+    // Mantiene la función de cambio para guardar el estado del checkbox
+    onRememberMeChange(): void {
+        localStorage.setItem(this.REMEMBER_ME_STATE_KEY, this.rememberMe ? 'true' : 'false');
+        // Si se desmarca, limpiamos el campo de correo para mejor UX
+        if (!this.rememberMe) {
+            this.correo = '';
+            localStorage.removeItem(this.REMEMBER_KEY);
+        }
+    }
 
   onLogin(): void {
     this.errorMessage = ''; 
     this.cargando = true;
 
-    // 3. LÓGICA COMPLETA DE RECORDAR: Guardar o eliminar el nombre de usuario
+    // ⭐ LÓGICA DE GUARDADO FINAL antes de llamar a la API
     if (this.rememberMe) {
-      localStorage.setItem(this.REMEMBER_KEY, this.correo);
+        // Guardar el estado de la casilla Y el correo actual
+        localStorage.setItem(this.REMEMBER_ME_STATE_KEY, 'true');
+        localStorage.setItem(this.REMEMBER_KEY, this.correo.trim());
     } else {
-      localStorage.removeItem(this.REMEMBER_KEY);
+        // Si no está marcado, asegurar que se elimine el correo
+        localStorage.setItem(this.REMEMBER_ME_STATE_KEY, 'false');
+        localStorage.removeItem(this.REMEMBER_KEY);
     }
 
+    // 5. Llamada al servicio de autenticación
     this.authService.login(this.correo, this.password).subscribe({
       next: (response: AuthResponse) => {
-        // Usa el método setAuthData del servicio para guardar la sesión
+        // Usa el método setAuthData del servicio para guardar el token, ID y Rol
         this.authService.setAuthData(response.token, response.id, response.rol);
         this.cargando = false;
         
